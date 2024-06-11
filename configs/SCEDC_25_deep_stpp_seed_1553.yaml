@@ -1,7 +1,7 @@
 seed_everything: 1553
 trainer:
     precision: 32
-    max_epochs: 50
+    max_epochs: 100
     # fast_dev_run: True
     accelerator: 'cuda'
     devices: [0]
@@ -64,11 +64,20 @@ model:
         round_time: true
         vis_type: ['interactive', 'static']
         start_idx: [0, 2]
-        name: covid_nj_cases
+        name: SCEDC_25
 data:
     class_path: data.lightning.sliding_window.SlidingWindowDataModule
     init_args:
         batch_size: 128
         num_workers: 8
-        name: covid_nj_cases
+        name: SCEDC_25
         option: ready
+catalog:
+    Mcut: 2.5
+    path: ../../Datasets/SCEDC/SCEDC_catalog.csv
+    path_to_polygon: ../../Datasets/SCEDC/SCEDC_shape.npy
+    auxiliary_start: 1981-01-01 00:00:00
+    train_nll_start: 1985-01-01 00:00:00
+    val_nll_start: 2005-01-01 00:00:00
+    test_nll_start: 2014-01-01 00:00:00
+    test_nll_end: 2020-01-01 00:00:00

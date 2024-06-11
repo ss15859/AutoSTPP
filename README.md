@@ -49,3 +49,12 @@ Specify the parameters in `configs/autoint_stpp.yaml` and then run
 ```bash
 make run_stpp config=autoint_stpp
 ```
+
+## | EarthquakeNPP
+
+Parameters are specified in `configs/ComCat_25_autoint_stpp_seed_0.yaml`,  then run
+
+```bash
+make run_stpp_earthquakeNPP config=ComCat_25_autoint_stpp_seed_0
+```
+

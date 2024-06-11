@@ -30,6 +30,13 @@ endif
 # COMMANDS                                                                      #
 #################################################################################
 
+submit_job:
+	@output_dir="/pbs_outputs/$(config)" && \
+	echo "$$output_dir" && \
+	mkdir -p "$$output_dir" && \
+	qsub -o "$$output_dir/output.txt" -e "$$output_dir/error.txt" -v CONFIG=$(config) pbs_job.sh
+
+
 #################################################################################
 # Cuboid related                                                                #
 #################################################################################
@@ -47,8 +54,13 @@ run_cuboid_normal:
 # List all the config files that end with 'stpp.yaml'
 CONFIG_FILES := $(wildcard configs/*stpp.yaml)
 
-config ?= autoint_stpp
+# config ?= autoint_stpp
 run_stpp:
+	python src/experiment/run_stpp.py -c configs/$(config).yaml
+
+
+run_stpp_earthquakeNPP:
+	python src/experiment/create_dataset.py configs/$(config).yaml
 	python src/experiment/run_stpp.py -c configs/$(config).yaml
 
 #################################################################################
