@@ -28,6 +28,8 @@ if not os.path.exists(filepath):
 
 	df = df[['time','x','y','magnitude']]
 
+	df = df[df['magnitude']>=config.catalog.Mcut]
+
 	### create train/val/test dfs
 	aux_df = df[df['time']>=config.catalog.auxiliary_start]
 	aux_df = df[df['time']<config.catalog.train_nll_start]
@@ -72,6 +74,10 @@ if not os.path.exists(filepath):
 	train_ar = np.expand_dims(train_df.to_numpy(), axis=0)
 	val_ar = np.expand_dims(val_df.to_numpy(), axis=0)
 	test_ar = np.expand_dims(test_df.to_numpy(), axis=0)
+
+	print(train_ar.shape)
+	print(val_ar.shape)
+	print(test_ar.shape)
 
 	sequences = {'train':train_ar,'val':val_ar,'test':test_ar}
 	np.savez(filepath, **sequences)
