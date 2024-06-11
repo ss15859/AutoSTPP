@@ -33,7 +33,7 @@ endif
 submit_job:
 	@output_dir="/pbs_outputs/$(config)" && \
 	echo "$$output_dir" && \
-	mkdir -p "$$output_dir" && \
+	python create_directory.py "$$output_dir" && \
 	qsub -o "$$output_dir/output.txt" -e "$$output_dir/error.txt" -v CONFIG=$(config) pbs_job.sh
 
 
