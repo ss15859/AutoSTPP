@@ -32,7 +32,7 @@ endif
 
 submit_job:
 	@output_dir="/pbs_outputs/$(config)" && \
-	qsub -o "$$output_dir_output.txt" -e "$$output_dir_error.txt" -v CONFIG=$(config) pbs_job.sh
+	qsub -o "$(output_dir)_output.txt" -e "$(output_dir)_error.txt" -v CONFIG=$(config) pbs_job.sh
 
 
 #################################################################################
