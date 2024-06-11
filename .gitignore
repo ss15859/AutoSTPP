@@ -44,8 +44,6 @@ nosetests.xml
 coverage.xml
 *.cover
 
-data/spatiotemporal/*
-
 # Translations
 *.mo
 *.pot

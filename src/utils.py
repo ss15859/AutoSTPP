@@ -556,7 +556,7 @@ def load_class(info: dict):
 
 def increase_u_limit():
     rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
-    resource.setrlimit(resource.RLIMIT_NOFILE, (65536, rlimit[1]))
+    resource.setrlimit(resource.RLIMIT_NOFILE, (rlimit[1], rlimit[1]))
 
 
 if __name__ == '__main__':
