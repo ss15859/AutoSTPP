@@ -14,8 +14,8 @@ config = DotWiz(config_dict)
 
 filepath = "data/spatiotemporal/"+config.data.init_args.name+".npz"
 
-# if not os.path.exists(filepath):
-if True:
+if not os.path.exists(filepath):
+# if True:
 
 	df = pd.read_csv(
 	                config.catalog.path,
@@ -27,8 +27,6 @@ if True:
 	df = df.sort_values(by='time')
 
 	df = df[['time','x','y','magnitude']]
-
-	print(df)
 
 	### create train/val/test dfs
 	aux_df = df[df['time']>=config.catalog.auxiliary_start]
@@ -74,10 +72,6 @@ if True:
 	train_ar = np.expand_dims(train_df.to_numpy(), axis=0)
 	val_ar = np.expand_dims(val_df.to_numpy(), axis=0)
 	test_ar = np.expand_dims(test_df.to_numpy(), axis=0)
-
-	print(train_ar.shape)
-	print(val_ar.shape)
-	print(test_ar.shape)
 
 	sequences = {'train':train_ar,'val':val_ar,'test':test_ar}
 	np.savez(filepath, **sequences)
