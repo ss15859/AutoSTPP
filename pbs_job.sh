@@ -12,7 +12,7 @@ pwd
 
 echo $CUDA_VISIBLE_DEVICES
 
-source activate autoint_cu112
+source activate earthquakeNPP
 
 make run_stpp_earthquakeNPP config=$CONFIG
 
