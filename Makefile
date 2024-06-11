@@ -31,8 +31,7 @@ endif
 #################################################################################
 
 submit_job:
-	@output_dir="$(config)" && \
-	qsub -o "$(output_dir)_output.txt" -e "$(output_dir)_error.txt" -v CONFIG=$(config) pbs_job.sh
+	qsub -o "$(config)_output.txt" -e "$(config)_error.txt" -v CONFIG=$(config) pbs_job.sh
 
 
 #################################################################################
