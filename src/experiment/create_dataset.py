@@ -75,10 +75,6 @@ if not os.path.exists(filepath):
 	val_ar = np.expand_dims(val_df.to_numpy(), axis=0)
 	test_ar = np.expand_dims(test_df.to_numpy(), axis=0)
 
-	print(train_ar.shape)
-	print(val_ar.shape)
-	print(test_ar.shape)
-
 	sequences = {'train':train_ar,'val':val_ar,'test':test_ar}
 	np.savez(filepath, **sequences)
 
