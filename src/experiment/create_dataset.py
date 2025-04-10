@@ -34,7 +34,8 @@ if not os.path.exists(filepath):
 	aux_df = df[df['time']>=config.catalog.auxiliary_start]
 	aux_df = df[df['time']<config.catalog.train_nll_start]
 
-	train_df = df[df['time']>=config.catalog.train_nll_start]
+	# train_df = df[df['time']>=config.catalog.train_nll_start]
+	train_df = df[df['time']>=config.catalog.auxiliary_start]
 	train_df = train_df[train_df['time']< config.catalog.val_nll_start]
 
 	val_df = df[df['time']>=config.catalog.val_nll_start]
@@ -48,7 +49,7 @@ if not os.path.exists(filepath):
 
 	lookback = 20
 
-	train_df = pd.concat([aux_df.tail(lookback), train_df], ignore_index=True)
+	# train_df = pd.concat([aux_df.tail(lookback), train_df], ignore_index=True)
 	val_df = pd.concat([train_df.tail(lookback), val_df], ignore_index=True)
 	test_df = pd.concat([val_df.tail(lookback), test_df], ignore_index=True)
 

@@ -57,8 +57,9 @@ run_stpp:
 
 
 run_stpp_earthquakeNPP:
-	python src/experiment/create_dataset.py configs/$(config).yaml
-	python src/experiment/run_stpp.py -c configs/$(config).yaml
+	# python src/experiment/create_dataset.py configs/$(config).yaml
+	# python src/experiment/run_stpp.py -c configs/$(config).yaml
+	python src/experiment/collate_results.py configs/$(config).yaml
 
 #################################################################################
 # Kubernetes related                                                            #

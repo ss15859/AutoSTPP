@@ -200,7 +200,7 @@ def sample_gaussian(m, v):
     return z
 
 
-def ll_no_events(w_i, b_i, tn_ti, t_ti):
+def ll_no_events(w_i, b_i, tn_ti, t_ti, mu, area=1):
     """
     Log likelihood of no events happening from t_n to t
     - ∫_{t_n}^t λ(t') dt' 
@@ -212,14 +212,14 @@ def ll_no_events(w_i, b_i, tn_ti, t_ti):
 
     :return: scalar
     """
-    return torch.sum(w_i / b_i * (torch.exp(-b_i * t_ti) - torch.exp(-b_i * tn_ti)), -1)
+    return mu*(t_ti[:,-1]-tn_ti[:,-1])*area + torch.sum(w_i / b_i * (torch.exp(-b_i * t_ti) - torch.exp(-b_i * tn_ti)), -1)
 
 
-def log_ft(t_ti, tn_ti, w_i, b_i):
-    return ll_no_events(w_i, b_i, tn_ti, t_ti) + torch.log(t_intensity(w_i, b_i, t_ti))
+def log_ft(t_ti, tn_ti, w_i, b_i,mu,area=1):
+    return ll_no_events(w_i, b_i, tn_ti, t_ti,mu,area) , torch.log(t_intensity(w_i, b_i, t_ti,mu))
 
 
-def t_intensity(w_i, b_i, t_ti):
+def t_intensity(w_i, b_i, t_ti,mu):
     """
     Compute spatial/temporal/spatiotemporal intensities
 
@@ -235,7 +235,7 @@ def t_intensity(w_i, b_i, t_ti):
     """
     v_i = w_i * torch.exp(-b_i * t_ti)
     lamb_t = torch.sum(v_i, -1)
-    return lamb_t
+    return lamb_t + mu
 
 
 def s_intensity(w_i, b_i, t_ti, s_diff, inv_var):
@@ -247,8 +247,8 @@ def s_intensity(w_i, b_i, t_ti, s_diff, inv_var):
     return f_s_cond_t
 
 
-def intensity(w_i, b_i, t_ti, s_diff, inv_var):
-    return t_intensity(w_i, b_i, t_ti) * s_intensity(w_i, b_i, t_ti, s_diff, inv_var)
+def intensity(w_i, b_i, t_ti, s_diff, inv_var, mu):
+    return t_intensity(w_i, b_i, t_ti, mu) * s_intensity(w_i, b_i, t_ti, s_diff, inv_var)
 
 
 class DeepSTPointProcess(BaseSTPointProcess):
@@ -269,6 +269,7 @@ class DeepSTPointProcess(BaseSTPointProcess):
         clip: float = 1.0,
         constrain_b: Union[bool, str] = False,
         sample: bool = False,
+        background_rate: bool = False,
         **kwargs  # for BaseSTPointProcess
     ):  
         """
@@ -296,11 +297,17 @@ class DeepSTPointProcess(BaseSTPointProcess):
         # Background 
         self.num_points = self.hparams.num_points
         self.background = nn.Parameter(torch.rand((self.num_points, 2)), requires_grad=True)
+
+        if background_rate == True:
+            print("Using a background rate")
+            self.mu = nn.Parameter(torch.zeros(1), requires_grad=True)
+        else:
+            self.mu = 0
         
     def project(self):
         pass
 
-    def forward(self, st_x, st_y):
+    def forward(self, st_x, st_y,return_params=False):
         """
         :param st_x: [batch, seq_len, 3] (lat, lon, time)
         :param st_y: [batch, 1, 3]
@@ -319,16 +326,30 @@ class DeepSTPointProcess(BaseSTPointProcess):
             
         # Calculate likelihood
         sll = torch.log(s_intensity(w_i, b_i, t_ti, s_diff, inv_var))
-        tll = log_ft(t_ti, tn_ti, w_i, b_i)
+        int_lambd, log_lambd_star = log_ft(t_ti, tn_ti, w_i, b_i,self.mu)
+        tll = int_lambd + log_lambd_star
         
-        # KL Divergence
-        if self.hparams.sample:
-            kl = kl_normal(qm, qv, *self.z_prior).mean()
-            nelbo = kl - self.hparams.beta * (sll.mean() + tll.mean())
-        else:
-            nelbo = - (sll.mean() + tll.mean())
+        
+        # # KL Divergence
+        # if self.hparams.sample:
+        #     kl = kl_normal(qm, qv, *self.z_prior).mean()
+        #     nelbo = kl - self.hparams.beta * (sll.mean() + tll.mean())
+        # else:
+        #     nelbo = - (sll.mean() + tll.mean())
 
-        return nelbo, sll.mean(), tll.mean()
+        # return nelbo, sll.mean(), tll.mean(),  torch.log(intensity(w_i, b_i, t_ti, s_diff, inv_var)), log_lambd_star, int_lambd
+
+                # KL Divergence
+        if self.hparams.sample:
+            kl = kl_normal(qm, qv, *self.z_prior)
+            nelbo = kl - self.hparams.beta * (sll + tll)
+        else:
+            nelbo = - (sll + tll)
+
+        if return_params == True:
+            return nelbo, sll, tll,  torch.log(intensity(w_i, b_i, t_ti, s_diff, inv_var, self.mu)), log_lambd_star, int_lambd, w_i, b_i, inv_var
+        else:
+            return nelbo, sll, tll,  torch.log(intensity(w_i, b_i, t_ti, s_diff, inv_var, self.mu)), log_lambd_star, int_lambd
    
     def encode(self, st_x):
         # Encode history locations and times
@@ -410,7 +431,7 @@ class DeepSTPointProcess(BaseSTPointProcess):
             tn_ti = torch.cat((tn_ti, torch.zeros(1, self.hparams.num_points).to(device)), -1).to(device)
             t_ti = tn_ti + t_
 
-            lamb_t = t_intensity(w_i_, b_i_, t_ti) / np.prod(scales)
+            lamb_t = t_intensity(w_i_, b_i_, t_ti, self.mu) / np.prod(scales)
 
             # Calculate spatial intensity
             N = len(s_grids)  # Number of grid points

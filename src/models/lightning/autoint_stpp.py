@@ -64,7 +64,7 @@ class AutoIntSTPointProcess(BaseSTPointProcess):
         """
         self.F.project()
         
-    def forward(self, st_x, st_y):
+    def forward(self, st_x, st_y, return_params=False):
         """
         Calculate NLL for a batch of sliding windows
 
@@ -112,8 +112,10 @@ class AutoIntSTPointProcess(BaseSTPointProcess):
         background_int = st_y[..., -1, -1] * torch.exp(self.background)
         lamb_ints += background_int  # Add background intensities' integral
 
-        tll = torch.log(lamb_t).mean() - lamb_ints.mean()
-        ll = torch.log(lambs_sum).mean() - lamb_ints.mean()
+        # tll = torch.log(lamb_t).mean() - lamb_ints.mean()
+        # ll = torch.log(lambs_sum).mean() - lamb_ints.mean()
+        tll = torch.log(lamb_t) - lamb_ints
+        ll = torch.log(lambs_sum) - lamb_ints
 
         ######### Debugging numerical error ########
         if not torch.all(lambs_sum > 0):
@@ -129,7 +131,7 @@ class AutoIntSTPointProcess(BaseSTPointProcess):
             raise ValueError('Negative intensities.')
 
         sll = ll - tll
-        return -ll, sll, tll
+        return -ll, sll, tll, torch.log(lambs_sum), torch.log(lamb_t), -lamb_ints
     
     def calc_lamb(self, st_x, st_x_cum, st_y, st_y_cum, scales, biases,
                   x_range, y_range, t_range, device):

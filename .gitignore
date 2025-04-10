@@ -5,6 +5,10 @@ __pycache__/
 # C extensions
 *.so
 
+# model updating
+*China*
+*background*
+
 # Distribution / packaging
 .Python
 env/
@@ -94,6 +98,8 @@ logs/
 
 *.pkl
 *.html
+*.pt
+*.csv
 
 id_rsa*
 *.bck
