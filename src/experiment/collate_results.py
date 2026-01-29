@@ -79,3 +79,8 @@ df.loc[mask, 'TLL'] = tlls.cpu().numpy()
 df.loc[mask, 'int_lambd'] = -int_lambds.cpu().numpy()
 df.loc[mask, 'lambd_star'] = np.exp(lambd_stars.cpu().numpy())
 
+# Write augmented catalog to file
+output_path = f"output_data/{config.data.init_args.name}/augmented_catalog.csv"
+df.to_csv(output_path, index=False)
+print(f"Wrote {output_path}")
+print("Done")
