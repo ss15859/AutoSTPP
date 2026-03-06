@@ -244,9 +244,9 @@ class BaseSTPointProcess(pl.LightningModule):
             torch.save((nll_vec_scaled, sll_vec_scaled, tll_vec_scaled, int_lambd, log_lambd_star), f'{out_dir}/lls-{batch_idx}.pt')
 
 
-        nll_scaled = nll_vec_scaled.mean()
-        sll_scaled = sll_vec_scaled.mean()
-        tll_scaled = tll_vec_scaled.mean()
+        nll_scaled = nll_vec_scaled.nanmean()
+        sll_scaled = sll_vec_scaled.nanmean()
+        tll_scaled = tll_vec_scaled.nanmean()
 
             
         self.log('test_nll', nll_scaled.item())

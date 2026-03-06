@@ -105,7 +105,7 @@ class AutoIntSTPointProcess(BaseSTPointProcess):
         # cumulative intensity of every event
         lamb_ints = self.F.int_lamb_stpp(s_x.view(-1, 2), (t_x_cum[:, -1:] - t_x_cum).view(-1, 1),
                                          t_diff.view(-1, 1)).view([batch, seq_len])
-        # lamb_ints = torch.where(lamb_ints >= 0, lamb_ints, torch.zeros_like(lamb_ints))
+        lamb_ints = torch.where(lamb_ints >= 0, lamb_ints, torch.zeros_like(lamb_ints))
 
         ######### Calculate loss ########
         lamb_ints = torch.sum(lamb_ints, -1)
